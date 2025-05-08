@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Interactive Storybook</title>
+  <style>
+    body {
+      font-family: 'Georgia', serif;
+      background-color: #ffd3c0;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .book-container {
+      width: 80%;
+      max-width: 700px;
+      background: #f9e9e1;
+      padding: 2rem;
+      box-shadow: 0 0 20px rgba(255, 88, 16, 0.728);
+      border-radius: 10px;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #83310e;
+    }
+
+    p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: #bc400a;
+    }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
+    }
+
+    button {
+      padding: 0.5rem 1.2rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      background-color: #ef9169;
+      color: #83310e;
+      cursor: pointer;
+      transition: background 0.3s;
+      font-family: 'Georgia', serif;
+    }
+
+    button:hover {
+      background-color: #ffb99b;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #bc400a;
+    }
+
+    /* Puzzle styles */
+    .puzzle-container {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      border: 4px solid #83310e;
+      background-color: #f5f5f5;
+      margin: 2rem auto;
+    }
+
+    .puzzle-piece {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-sizing: border-box;
+      background-size: 100% 100%;
+      cursor: pointer;
+      transition: border 0.2s;
+    }
+
+    .puzzle-piece.selected {
+      border: 3px solid #ef9169;
+      z-index: 10;
+    }
+
+    .puzzle-controls {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .puzzle-message {
+      text-align: center;
+      color: #155724;
+      font-weight: bold;
+      margin-top: 1rem;
+    }
+
+    .puzzle-instruction {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #6b3e2e;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="book-container">
+    <div class="page active">
+      <h1>My Family 🏵️</h1>
+      <h3 style="color: #83310e;">by Janay Snell</h3>
+      <p>Click "Next" to look through my pictures! </p>
+    </div>
+
+    <div class="page">
+      <img src="images/My Family.gif" alt="Chapter 1" style="width: 80%; border-radius: 10px; margin-bottom: 1rem; margin-top: 1rem; margin: auto; display: block;">
+      <p>My family is the heart of who I am. It's where I find solace, where I learn to be myself, and where I grow as a person.</p>
+    </div>
+
+    <div class="page">
+      <h1>My Art 🏵️</h1>
+      <p>Click "Next" to look through my art!</p>
+    </div>
+
+    <div class="page">
+      <div class="puzzle-controls">
+        <button id="shuffle-btn">Start Puzzle</button>
+        <button id="reset-btn" disabled>Reset</button>
+      </div>
+      <div class="puzzle-container" id="puzzle-container"></div>
+      <div class="puzzle-message" id="completion-message" style="display: none;">
+        🎉 Puzzle completed!
+      </div>
+      <div class="puzzle-instruction" id="instruction">Click 'Start Puzzle' to begin</div>
+    </div>
+
+    <div class="page">
+      <img src="images/IMG_0148.jpeg" alt="Chapter 3" style="width: 80%; border-radius: 10px; margin-bottom: 1rem; margin-top: 1rem; margin: auto; display: block;">
+    </div>
+
+    <div class="page">
+      <img src="images/IMG_0762.jpeg" alt="Chapter 4" style="width: 80%; border-radius: 10px; margin-bottom: 1rem; margin-top: 1rem; margin: auto; display: block;">
+    </div>
+
+    <div class="nav-buttons">
+      <button id="prevBtn">⟵ Previous</button>
+      <button id="nextBtn">Next ⟶</button>
+    </div>
+
+    <div class="footer">
+      <p>© 2025 Janay Snell</p>
+    </div>
+  </div>
+
+  <script>
+    // Navigation
+    const pages = document.querySelectorAll('.page');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    let currentPage = 0;
+
+    function showPage(index) {
+      pages.forEach((page, i) => {
+        page.classList.remove('active');
+        if (i === index) page.classList.add('active');
+      });
+    }
+
+    nextBtn.addEventListener('click', () => {
+      if (currentPage < pages.length - 1) {
+        currentPage++;
+        showPage(currentPage);
+      }
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 0) {
+        currentPage--;
+        showPage(currentPage);
+      }
+    });
+
+    // Puzzle logic
+    document.addEventListener('DOMContentLoaded', () => {
+      const GRID_SIZE = 4;
+      const PIECE_WIDTH = 100;
+      const PIECE_HEIGHT = 100;
+
+      const puzzleContainer = document.getElementById('puzzle-container');
+      const shuffleBtn = document.getElementById('shuffle-btn');
+      const resetBtn = document.getElementById('reset-btn');
+      const completionMessage = document.getElementById('completion-message');
+      const instruction = document.getElementById('instruction');
+
+      let puzzlePieces = [];
+      let selectedPieceIndex = null;
+      let isShuffled = false;
+
+      function getPieceFilename(row, col) {
+        return `puzzle_pieces/piece_${row}_${col}.png`;
+      }
+
+      function initializePuzzle() {
+        puzzleContainer.innerHTML = '';
+        puzzlePieces = [];
+        let pieceId = 0;
+
+        for (let row = 0; row < GRID_SIZE; row++) {
+          for (let col = 0; col < GRID_SIZE; col++) {
+            const piece = {
+              id: pieceId,
+              correctPosition: pieceId,
+              currentPosition: pieceId,
+              element: document.createElement('div')
+            };
+
+            const currentId = pieceId; // ensure closure correctness
+
+            piece.element.className = 'puzzle-piece';
+            piece.element.style.top = `${row * PIECE_HEIGHT}px`;
+            piece.element.style.left = `${col * PIECE_WIDTH}px`;
+            piece.element.style.backgroundImage = `url('${getPieceFilename(row, col)}')`;
+
+            piece.element.addEventListener('click', () => handlePieceClick(currentId));
+            puzzleContainer.appendChild(piece.element);
+            puzzlePieces.push(piece);
+
+            pieceId++;
+          }
+        }
+
+        selectedPieceIndex = null;
+        isShuffled = false;
+        resetBtn.disabled = true;
+        shuffleBtn.textContent = 'Start Puzzle';
+        completionMessage.style.display = 'none';
+        instruction.textContent = "Click 'Start Puzzle' to begin";
+      }
+
+      function shufflePuzzle() {
+        for (let i = puzzlePieces.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          swapPieces(i, j);
+        }
+
+        isShuffled = true;
+        resetBtn.disabled = false;
+        shuffleBtn.textContent = 'Shuffle Again';
+        instruction.textContent = 'Click a piece to select it';
+        completionMessage.style.display = 'none';
+        if (selectedPieceIndex !== null) {
+          puzzlePieces[selectedPieceIndex].element.classList.remove('selected');
+          selectedPieceIndex = null;
+        }
+      }
+
+      function resetPuzzle() {
+        puzzlePieces.forEach(piece => {
+          const row = Math.floor(piece.correctPosition / GRID_SIZE);
+          const col = piece.correctPosition % GRID_SIZE;
+
+          piece.currentPosition = piece.correctPosition;
+          piece.element.style.top = `${row * PIECE_HEIGHT}px`;
+          piece.element.style.left = `${col * PIECE_WIDTH}px`;
+        });
+
+        isShuffled = false;
+        resetBtn.disabled = true;
+        shuffleBtn.textContent = 'Start Puzzle';
+        instruction.textContent = "Click 'Start Puzzle' to begin";
+        completionMessage.style.display = 'none';
+      }
+
+      function swapPieces(index1, index2) {
+        const piece1 = puzzlePieces[index1];
+        const piece2 = puzzlePieces[index2];
+
+        const tempPos = piece1.currentPosition;
+        piece1.currentPosition = piece2.currentPosition;
+        piece2.currentPosition = tempPos;
+
+        const row1 = Math.floor(piece1.currentPosition / GRID_SIZE);
+        const col1 = piece1.currentPosition % GRID_SIZE;
+        piece1.element.style.top = `${row1 * PIECE_HEIGHT}px`;
+        piece1.element.style.left = `${col1 * PIECE_WIDTH}px`;
+
+        const row2 = Math.floor(piece2.currentPosition / GRID_SIZE);
+        const col2 = piece2.currentPosition % GRID_SIZE;
+        piece2.element.style.top = `${row2 * PIECE_HEIGHT}px`;
+        piece2.element.style.left = `${col2 * PIECE_WIDTH}px`;
+      }
+
+      function handlePieceClick(index) {
+        if (!isShuffled) return;
+
+        if (selectedPieceIndex === null) {
+          selectedPieceIndex = index;
+          puzzlePieces[index].element.classList.add('selected');
+          instruction.textContent = 'Now click another piece to swap';
+        } else if (selectedPieceIndex === index) {
+          puzzlePieces[index].element.classList.remove('selected');
+          selectedPieceIndex = null;
+          instruction.textContent = 'Click a piece to select it';
+        } else {
+          puzzlePieces[selectedPieceIndex].element.classList.remove('selected');
+          swapPieces(selectedPieceIndex, index);
+          selectedPieceIndex = null;
+          instruction.textContent = 'Click a piece to select it';
+          checkPuzzleCompletion();
+        }
+      }
+
+      function checkPuzzleCompletion() {
+        const isComplete = puzzlePieces.every(piece => piece.currentPosition === piece.correctPosition);
+        if (isComplete) {
+          completionMessage.style.display = 'block';
+          instruction.textContent = 'Puzzle completed!';
+        }
+      }
+
+      shuffleBtn.addEventListener('click', shufflePuzzle);
+      resetBtn.addEventListener('click', resetPuzzle);
+      initializePuzzle();
+    });
+  </script>
+
+</body>
+</html>

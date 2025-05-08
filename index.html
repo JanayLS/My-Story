@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Digital Scrapbook</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-overlay">
+                <h1>My Digital Scrapbook</h1>
+            </div>
+        </header>
+        
+        <!-- Home Page Section -->
+        <section id="home" class="page-section active">
+            <h2>Welcome to My Story!</h2>
+            <p>This digital scrapbook is a collection of memories, achievements, and the things that make me who I am. Feel free to explore the different sections to learn more about my life, family, hobbies, and passions.</p>
+            <p>I created this digital space to preserve precious moments and share my journey with friends and family. Each section contains photos, stories, and interactive elements that bring my experiences to life.</p>
+            <p>I hope you enjoy exploring the pages of my life.</p>
+            <a href="slides.html" class="cta-button start-exploring">Start Exploring</a>
+        </section>
+        
+
+    <script>
+        // Navigation functionality
+        const navLinks = document.querySelectorAll('.nav-link');
+        const pageSections = document.querySelectorAll('.page-section');
+        
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Remove active class from all links and sections
+                navLinks.forEach(link => link.classList.remove('active'));
+                pageSections.forEach(section => section.classList.remove('active'));
+                
+                // Add active class to clicked link
+                link.classList.add('active');
+                
+                // Get the target section ID and make it active
+                const targetId = link.getAttribute('href').substring(1);
+                document.getElementById(targetId).classList.add('active');
+                
+                // Scroll to top of the page
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        });
+        
+        // Start Exploring button
+        const startExploringBtn = document.querySelector('.start-exploring');
+        startExploringBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Remove active class from all links and sections
+            navLinks.forEach(link => link.classList.remove('active'));
+            pageSections.forEach(section => section.classList.remove('active'));
+            
+            // Add active class to family link and section
+            document.querySelector('a[href="#family"]').classList.add('active');
+            document.getElementById('family').classList.add('active');
+            
+            // Scroll to top of the page
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // Photo Modal functionality
+        const photoItems = document.querySelectorAll('.photo-item');
+        const photoModal = document.getElementById('photoModal');
+        const modalImage = document.querySelector('.modal-image');
+        const modalCaption = document.querySelector('.modal-caption');
+        const modalStory = document.querySelector('.modal-story');
+        const closeModal = document.querySelectorAll('.close-modal');
+        
+        photoItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const img = item.querySelector('img');
+                const caption = item.querySelector('.photo-caption').textContent;
+                const story = item.getAttribute('data-story');
+                
+                modalImage.src = img.src;
+                modalImage.alt = img.alt;
+                modalCaption.textContent = caption;
+                modalStory.textContent = story;
+                
+                photoModal.style.display = 'flex';
+            });
+        });
